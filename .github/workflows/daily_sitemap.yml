@@ -1,0 +1,32 @@
+name: Daily English Sitemap
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # runs every day at midnight UTC
+  workflow_dispatch:      # allows manual trigger
+
+jobs:
+  generate-sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate English sitemap
+        run: python generate_sitemap.py
+
+      - name: Commit and push sitemap
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add sitemap-en.xml
+          # Only commit if there are changes
+          git diff-index --quiet HEAD || git commit -m "Update English sitemap [skip ci]"
+          git push --set-upstream origin main || echo "Push failed"
